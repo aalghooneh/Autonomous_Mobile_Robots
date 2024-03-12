@@ -56,8 +56,8 @@ class trajectoryController(controller):
         linear_vel=self.PID_linear.update([e_lin, pose[3]], status)
         angular_vel=self.PID_angular.update([e_ang, pose[3]], status) 
 
-        linear_vel = 0.5 if linear_vel > 1.0 else linear_vel
-        angular_vel= 0.5 if angular_vel > 1.0 else angular_vel
+        linear_vel = 0.1 if linear_vel > 0.1 else linear_vel
+        angular_vel= 0.5 if angular_vel > 0.5 else angular_vel
 
 
         return linear_vel, angular_vel
@@ -72,4 +72,4 @@ class trajectoryController(controller):
                                axis=1)
         closestIndex=np.argmin(distanceSquared)
 
-        return listGoals[ min(closestIndex + 3, len(listGoals) - 1) ]
+        return listGoals[ min(closestIndex + 1, len(listGoals) - 1) ]
