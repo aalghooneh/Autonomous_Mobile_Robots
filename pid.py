@@ -7,8 +7,6 @@ PD=1
 PI=2
 PID=3
 
-
-
 class PID_ctrl:
     
     

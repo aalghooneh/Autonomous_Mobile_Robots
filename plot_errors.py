@@ -1,6 +1,9 @@
 import matplotlib.pyplot as plt
 from utilities import FileReader
 
+
+
+
 def plot_errors():
     
     headers, values=FileReader("robot_pose.csv").read_file()

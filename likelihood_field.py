@@ -11,80 +11,38 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, QoSDurabilityPolicy
 from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import Pose, PointStamped, Quaternion, Point
-from utilities import *
-
-class mapManipulator(Node):
 
 
-    def __init__(self, filename_: str = "room.yaml", laser_sig=0.1):
-        
-        
-        super().__init__('likelihood_field')
-        
-        filenameYaml=None
-        filenamePGM=None
-        if ".pgm" in filename_:
-            
-            filenamePGM=filename_
-            filenameYaml=filename_.replace(".pgm", ".yaml")
-            
-        elif ".yaml" in filename_:
-            
-            filenameYaml=filename_
-            filenamePGM=filename_.replace(".yaml", ".pgm")
-        
-        else:
-            filenameYaml=filename_ + ".yaml"
-            filenamePGM=filename_+".pgm"
-
-        
-
-        width, height, max_value, pixels = self.read_pgm(filenamePGM)
+class map_utilities(Node):
 
 
-        self.width = width
-        self.height = height
+    def __init__(self, laser_sig=0.1, filename_="room.pgm", yaml_filename_="room.yaml"):
         
         
-        
+        filename = filename_
+        yaml_filename=yaml_filename_
+        width, height, max_value, pixels = self.read_pgm(filename, yaml_filename)
+      
 
         self.image_array = np.array(pixels).reshape((height, width))
-        self.o_x, self.o_y, self.res, self.thresh = self.read_description(filenameYaml)
+        self.o_x, self.o_y, self.res, self.thresh = self.read_description(yaml_filename)
 
         self.laser_sig=laser_sig
         
         self.likelihood_msg=None
-
-        
-    def getAllObstacles(self):
-        image_array=self.image_array.T
-
         
         
-        
-        indices = np.where(image_array < 10)
-        
-        return [self.cell_2_position([i, j]) for i, j in zip(indices[0], indices[1])]
-
-    def getLikelihoodField(self):
-        return self.likelihood_field
     
-    def getMetaData(self):
-        return self.o_x, self.o_y, self.res, self.thresh
-            
-    def getMap(self):
-        return self.image_array
     
     def timer_callback(self):
         if self.likelihood_msg is None: 
             return
         self.map_publisher.publish(self.likelihood_msg)
         
-    def read_pgm(self, filename):
+    def read_pgm(self, filename, yaml_filename):
         with open(filename, 'rb') as f:
             # Check if it's a PGM file
             header = f.readline().decode().strip()
-            
             if header != 'P5':
                 raise ValueError('Invalid PGM file format')
 
@@ -117,11 +75,11 @@ class mapManipulator(Node):
 
 
 
-    def read_description(self, filenameYAML):
+    def read_description(self, map_yaml_name):
         import re
 
         # Open and read the YAML file
-        with open(filenameYAML, 'r') as file:
+        with open(map_yaml_name, 'r') as file:
             yaml_content = file.readlines()
 
             # Extract the desired fields
@@ -142,21 +100,16 @@ class mapManipulator(Node):
         return origin_x, origin_y, resolution, threshold
 
 
-    def getOrigin(self):
-        return np.array([self.o_x, self.o_y])
-    
-    def getResolution(self):
-        return self.res
-    
-    def cell_2_position(self, pix):
-        i,j= pix
-        return self.o_x + i*self.getResolution(),    (self.height - j) * self.getResolution()  + self.o_y  
+
+    def cell_2_position(self, p):
+        i=p[0]
+        j=p[1]
+        return i*self.res + self.o_x, j*self.res + self.o_y
     
     
-    def position_2_cell(self, pos):
-        print(pos)
-        x,y = pos
-        return floor( (-self.o_x + x)/self.getResolution()), -floor( -self.height + (-self.o_y + y)/self.getResolution() )
+    def position_2_cell(self, X):
+        x=X[0];y=X[1]
+        return floor( (x- self.o_x )/self.res), floor( (y-self.o_y)/self.res)
 
 
     def make_likelihood_field(self):
@@ -166,12 +119,13 @@ class mapManipulator(Node):
         from sklearn.neighbors import KDTree
         
         
-
+        self.plot_pgm_image(image_array)
         indices = np.where(image_array < 10)
         
-        occupied_points = [self.cell_2_position([i, j]) for i, j in zip(indices[0], indices[1])]
-        all_positions = [self.cell_2_position([i, j]) for i in range(image_array.shape[0]) for j in range(image_array.shape[1])]
+        occupied_points = [self.cell_2_position((i, j)) for i, j in zip(indices[0], indices[1])]
+        all_positions = [self.cell_2_position((i, j)) for i in range(image_array.shape[0]) for j in range(image_array.shape[1])]
 
+        print(len(occupied_points), "vs", len(all_positions))
         kdt=KDTree(occupied_points)
 
         dists=kdt.query(all_positions, k=1)[0][:]
@@ -186,9 +140,7 @@ class mapManipulator(Node):
         self.occ_points=np.array(occupied_points)
         
                 
-        #self.plot_pgm_image(likelihood_field_img)
-
-        self.likelihood_field = likelihood_field
+        self.plot_pgm_image(likelihood_field)
         
         return likelihood_field
                 
@@ -204,61 +156,28 @@ class mapManipulator(Node):
 
         return data_
     
+    
     def to_message(self):
         """ Return a nav_msgs/OccupancyGrid representation of this map. """
-        grid = OccupancyGrid()
-        grid.header.stamp = self.get_clock().now().to_msg()
-        grid.header.frame_id = "map"
+        grid_msg = OccupancyGrid()
+        grid_msg.header.stamp = self.get_clock().now()
+        grid_msg.header.frame_id = "map"
 
-        likelihoodField = self.getLikelihoodField()
-
-        grid.info.resolution = self.getResolution()  # Set the resolution (m/cell)
-        grid.info.width = self.height
-        grid.info.height = self.width
-        grid.info.origin = Pose()  # Set the origin of the map (geometry_msgs/Pose)
-        
-        gridOrigin = self.cell_2_position([0, self.height])
-        
-
-        grid.info.origin.orientation.w = np.cos(-np.pi/4)
-        grid.info.origin.orientation.z = np.sin(-np.pi/4)
-        offset = -self.height*self.getResolution()
-        print( offset )
-        print(self.getOrigin()[1])
-
-
-        grid.info.origin.position.x, grid.info.origin.position.y = self.getOrigin()[0], +self.getOrigin()[1] - offset
-
-
-        #grid.info.origin.orientation.w = np.cos(np.pi/2)
-        #grid.info.origin.orientation.z = np.sin(np.pi/2)
-        # Flatten the likelihood field and scale it to [0, 100], set unknown as -1
-        
-        normalized_likelihood = np.clip(likelihoodField.T * 100, 0, 100)
-        
-        # Convert to integers and ensure values are within the range [-128, 127]
-        # In ROS, 0 means unknown, so we remap our values from [0, 100] to [1, 101]
-        # and then subtract 1 to have [0, 100] for the message
-        
-        grid.data = [int(value) for value in normalized_likelihood.flatten()]
-        grid.data = list(grid.data)
-
-
-        return grid
-
-
+        grid_msg.data = self._numpy_to_data()
+        return grid_msg
+    
+    
     def calculate_score(self,x,y):
         try:
-            return self.likelihood_field[self.position_2_cell(x,y)]
+            return self.likelihood_field[self.position_2_cell([x,y])]
         except IndexError:
             return 0
         
         
         
-    def map_localation_query(self, laser_msg: LaserScan):
+    def map_localization_query(self, laser_msg: LaserScan):
         
-        points = convertScanToCartesian(laser_msg)
-        
+        points = laserscan_to_cartesian(laser_msg)
 
         # Define the range for x, y, and theta
         x_min, x_max = -10, 10
@@ -273,12 +192,10 @@ class mapManipulator(Node):
         particles_x = np.random.uniform(x_min, x_max, num_particles)
         particles_y = np.random.uniform(y_min, y_max, num_particles)
         particles_theta = np.random.uniform(theta_min, theta_max, num_particles)
-
         
         # Transform points using each particle
         max_score=-1000
         
-
 
         for j in range(10):
             
@@ -322,53 +239,40 @@ class mapManipulator(Node):
                 particles_x = np.random.uniform(x_min, x_max, num_particles)
                 particles_y = np.random.uniform(y_min, y_max, num_particles)
                 particles_theta = np.random.uniform(theta_min, theta_max, num_particles)        
-        
-        
 
         plt.plot(tx, ty, '*')
-        
-
-
-        
-        
         plt.plot(self.occ_points[:,0], self.occ_points[:,1], '.')
-        
-        
         plt.axis('off')
-        
-        
         plt.title('PGM Image')
-        
-        
         plt.show()
-            
 
 
-
-
-
-     
-
-
-
-import argparse
-if __name__=="__main__":
+def laserscan_to_cartesian(laserscan):
     
+    angle_min = laserscan.angle_min
+    angle_increment = laserscan.angle_increment
+    range_min = laserscan.range_min
+    ranges = np.array(laserscan.ranges)
+
+    valid_indices = np.where((ranges != 0) & (ranges <= laserscan.range_max))
+    valid_ranges = ranges[valid_indices]
+
+    angles = angle_min + valid_indices[0] * angle_increment
+
+    cartesian_points = np.column_stack((valid_ranges * np.cos(angles), valid_ranges * np.sin(angles)))
+
+    return cartesian_points        
 
 
-    rclpy.init()
 
-    parser=argparse.ArgumentParser()
-    parser.add_argument('--map', type=str, default="./your_map/room.yaml", help='the absolute path to argument')
-    parser.add_argument('--std', type=float, help='the std', default=0.01)
+if __name__=="__main__":
+    #rclpy.init()
 
-
-    args = parser.parse_args()
-
-    MAP_UTILITIS=mapManipulator(args.map, args.std)
+    MAP_UTILITIS=map_utilities()
 
     #rclpy.spin(MAP_UTILITIS)
 
 
-# Usage example
+
+
 

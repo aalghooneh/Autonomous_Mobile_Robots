@@ -1,15 +1,9 @@
-
-
-
 from math import atan2, asin, sqrt
 from sensor_msgs.msg import LaserScan
 
-
 import numpy as np
 
-
 M_PI=3.1415926535
-
 
 def normalize_angle(theta):
     while theta > M_PI:
@@ -17,9 +11,6 @@ def normalize_angle(theta):
     while theta < -M_PI:
         theta += 2 * M_PI
     return theta
-
-
-
 
 
 class Logger:
@@ -139,8 +130,6 @@ def calculate_angular_error(current_pose, goal_pose):
         error_angular -= 2*M_PI
     
     return error_angular
-
-
 
 
 def convertScanToCartesian(laserScan: LaserScan):

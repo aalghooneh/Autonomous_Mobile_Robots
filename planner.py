@@ -1,8 +1,11 @@
-
 from mapUtilities import *
 from a_star import *
+import time
 
-POINT_PLANNER=0; TRAJECTORY_PLANNER=1
+POINT_PLANNER=0; A_STAR_PLANNER=1; RRT_PLANNER=2; RRT_STAR_PLANNER=3
+
+
+# TODO Modify this class so that is uses the RRT* planner with virtual obstacles
 
 class planner:
     def __init__(self, type_, mapName="room"):
@@ -15,48 +18,62 @@ class planner:
         
         if self.type==POINT_PLANNER:
             return self.point_planner(endPose)
+
+        self.costMap=None
+        self.initTrajectoryPlanner()
         
-        elif self.type==TRAJECTORY_PLANNER:
-            self.costMap=None
-            self.initTrajectoryPlanner()
-            return self.trajectory_planner(startPose, endPose)
+        return self.trajectory_planner(startPose, endPose, self.type)
 
 
     def point_planner(self, endPose):
         return endPose
 
     def initTrajectoryPlanner(self):
-
-
-        # TODO PART 5 Create the cost-map, the laser_sig is 
-        # the standard deviation for the gausiian for which
-        # the mean is located on the occupant grid. 
-        self.m_utilites=mapManipulator(laser_sig=...)
-            
-        self.costMap=self.m_utilites.make_likelihood_field()
         
+        #### If using the map, you can leverage on the code below originally implemented for A* (BONUS points option)
+        self.m_utilites=mapManipulator(laser_sig=0.4)    
+        self.costMap=self.m_utilites.make_likelihood_field()
 
-    def trajectory_planner(self, startPoseCart, endPoseCart):
+        #TODO Remember to initialize the rrt_star
+        
+    
+    def trajectory_planner(self, startPoseCart, endPoseCart, type):
+        
+        #### If using the map, you can leverage on the code below originally implemented for A* (BONUS points option)
+        #### If not using the map (no bonus), you can just call the function in rrt_star with the appropriate arguments and get the returned path
+        #### then you can put the necessary measure to bypass the map stuff down here.
+        # Map scaling factor (to save planning time)
+        scale_factor = 1 # this is the downsample scale, if set 2, it will downsample the map by half, and if set x, it will do the same as 1/x
 
 
-        # This is to convert the cartesian coordinates into the 
-        # the pixel coordinates of the map image, remmember,
-        # the cost-map is in pixels. You can by the way, convert the pixels
-        # to the cartesian coordinates and work by that index, the a_star finds
-        # the path regardless. 
         startPose=self.m_utilites.position_2_cell(startPoseCart)
         endPose=self.m_utilites.position_2_cell(endPoseCart)
         
-        # TODO PART 5 convert the cell pixels into the cartesian coordinates
+
+        start_time = time.time()
         
-        Path = list(map(...))
+        startPose = [int(i/scale_factor) for i in startPose]
+        endPose   = [int(j/scale_factor) for j in endPose]
+
+        mazeOrigin = self.m_utilites.position_2_cell([0,0])
+
+        # TODO This is for A*, modify this part to use RRT*
+        path = search(self.costMap, startPose, endPose, scale_factor)
 
 
+        end_time = time.time()
 
-        # TODO PART 5 return the path as list of [x,y]
-        return ...
+        # This will display how much time the search algorithm needed to find a path
+        print(f"the time took for a_star calculation was {end_time - start_time}")
 
+        path_ = [[x*scale_factor, y*scale_factor] for x,y in path ]
+        Path = np.array(list(map(self.m_utilites.cell_2_position, path_ )))
 
+        # TODO Smooth the path before returning it to the decision maker
+        # this can be in form of a function that you can put in the utilities.py 
+        # or add it as a method to the original rrt.py 
+
+        return Path
 
 
 if __name__=="__main__":
@@ -65,6 +82,5 @@ if __name__=="__main__":
     
     map_likelihood=m_utilites.make_likelihood_field()
 
-    # you can use this part of the code to test your 
-    # search algorithm regardless of the ros2 hassles
-    
+    # you can do your test here ...
+

@@ -1,10 +1,4 @@
-
-
-
 import numpy as np
-
-
-
 
 class kalman_filter:
     

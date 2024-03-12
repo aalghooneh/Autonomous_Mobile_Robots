@@ -1,7 +1,4 @@
-
-
 import sys
-
 
 from utilities import euler_from_quaternion, calculate_angular_error, calculate_linear_error
 from pid import PID_ctrl
@@ -10,18 +7,18 @@ from rclpy import init, spin, spin_once
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
 
-
 from rclpy.qos import QoSProfile
 from nav_msgs.msg import Odometry as odom
 
 from localization import localization, rawSensors, kalmanFilter
 
-from planner import TRAJECTORY_PLANNER, POINT_PLANNER, planner
+
+# The final exam is only about testing the rrt_star, though you can work with the 
+# rrt itself too and observe the difference. 
+from planner import A_STAR_PLANNER, RRT_PLANNER, RRT_STAR_PLANNER, POINT_PLANNER, planner
 from controller import controller, trajectoryController
 
-
 from geometry_msgs.msg import PoseStamped
-
 
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
@@ -39,29 +36,12 @@ class decision_maker(Node):
         self.create_subscription(PoseStamped, "/goal_pose", self.designPathFor, 10)
         
         self.pathPublisher = self.create_publisher(Path, '/designedPath', 10)
-        
         publishing_period=1/rate
 
-        # TODO PART 5 choose your threshold
-        self.reachThreshold=...
-
-        # TODO PART 5 your localization type
-        self.localizer=localization(...)
+        self.reachThreshold=0.1
 
 
-        
-        if motion_type==POINT_PLANNER:
-            self.controller=controller(klp=0.2, klv=0.5, kap=0.8, kav=0.6)      
-            self.planner=planner(POINT_PLANNER)
-
-        
-        elif motion_type==TRAJECTORY_PLANNER:
-            # TODO PART 5 Bonus Put the gains that you conclude from lab 2
-            self.controller=trajectoryController(...)      
-            self.planner=planner(TRAJECTORY_PLANNER)
-        
-        else:
-            print("Error! you don't have this type of planner", file=sys.stderr)
+        self.localizer=localization(rawSensors)
 
 
         self.goal = None
@@ -69,12 +49,27 @@ class decision_maker(Node):
         self.create_timer(publishing_period, self.timerCallback)
 
 
+        if motion_type==POINT_PLANNER:
+            self.controller=controller(klp=0.2, klv=0.5, kap=0.8, kav=0.6)      
+            self.planner=planner(POINT_PLANNER)
+            return -1
+
+        self.controller=trajectoryController(klp=0.2, klv=0.5, kap=0.8, kav=0.6)      
+        
+        if motion_type in [RRT_PLANNER, RRT_STAR_PLANNER, A_STAR_PLANNER]:
+            self.planner = planner(motion_type)
+            
+        else:            
+            print("Error! you don't have this type of planner", file=sys.stderr)
+            return -1
+            
+
         print("waiting for your input position, use 2D nav goal in rviz2")
 
+        # hint: if you set the self.goal in here, you can bypass the rviz goal selector
+        # this can be useful if you don't want to use the map
 
-
-
-    # This is for the rviz2 interface
+    
     def designPathFor(self, msg: PoseStamped):
         
         spin_once(self.localizer)
@@ -115,8 +110,6 @@ class decision_maker(Node):
             
             self.controller.PID_angular.logger.save_log()
             self.controller.PID_linear.logger.save_log()
-
-
             
             self.goal = None
             print("waiting for the new position input, use 2D nav goal on map")
@@ -175,11 +168,16 @@ def main(args=None):
         print("invalid motion type", file=sys.stderr)
 
 
-
+    
     try:
         spin(DM)
     except SystemExit:
         print(f"reached there successfully {DM.localizer.pose}")
+        return
+
+    except e:
+        print("error")
+        return 
 
 
 

@@ -1,145 +1,165 @@
-# LAB 4 - Path planning and navigation
+# Final exam (30% of the final total grade)
 
 ## Introduction
 
-Welcome to LAB 4 of the mobile robotics course! 
-In this lab, participants will gain experience with implementing a path planner and drive the robot using the obtained plan.
-By the end of this lab, participants will be able to:
-- Use a map to create a graph for graph-based path planner;
-- Generate a plan with the path planner and navigate the robot through the path to specified goals.
+In the final exam, you will work on an individual project that is based on the same code structure as the ones used for the labs. **Make sure you familiarize yourself with the entire structure before attempting this exam**.
 
-*Part 1* and *Part 2* are the same as in the previous labs they are here just for your convenience.
+If you haven't, you can also check the recording from the lecture on Nov. 30th where we explained part of the final exam.
 
+**Rules for the final exam:**
+- It must be completed individually, do not work in groups, and do not violate Policy 71 (you can reuse material from your previous labs);
+- You may ask questions on Piazza both publicly and privately, when asking privately make sure to include the entire teaching team;
+- You may request individual meetings with the teaching team during the exam period (Dec. 8 - Dec. 18), meetings should not exceed 30 minutes;
+- In case of emergency, you may request resources (laptops, remote desk computers) by emailing your TA Amr Hamdi (amhamdi@uwaterloo.ca), no resources will be allowed to be requested after 6PM Dec. 18.
 
-#### The summary of what you should learn is as following:
-You will learn how to:
-- Create a cost map from a pre-aquired map;
-- Generate an optimal path using the A* algorithm;
-- Execute a path on a mobile robot.
+Please note that both questions and individual meetings must be given sufficient time to be answered and planned (meetings should be requested with 12 hours notice, preferably). After 6PM Dec. 18, questions are not guaranteed answers, and meetings will not be planned.
 
-**NOTE** this Lab builds on top of Lab 2 and Lab 3. A complete solution to Lab 2 and Lab 3 is provided within this lab so that even if you did not conclude Lab 2 and Lab 3's implementation, you can still work on Lab 3 without penalties. You are welcome to replace some of the code with your own development from Lab 2 and Lab 3.
+**Ask questions on Piazza**
 
-Check ```rubrics.md``` for the grading scheme of this lab.
+https://piazza.com/uwaterloo.ca/fall2023/mte544
 
-### NOTES for pre-lab activities
-Given the limited time in the lab, it is highly recommended to go through this manual and start (or complete) your implementation before the lab date, by working on your personal setup (VMWare, remote desktop, lent laptop), and using simulation for testing when needed to verify that your codes are working before coming into the lab. For simulation, refer to `tbt3Simulation.md` in the `main` branch.
+**Individual meetings**
 
-During the 3 hours in the lab, you want to utilize this time to test your code, work with the actual robot, get feedback from the TAs, and acquire the in-lab marks (check `rubrics.md` in the same branch).
+You may contact the following people (please add everyone so the first available person can reply) for an in-person or online meeting (Prof. Hu and Ahmad will be online):
+- Ahmad (aralghooneh@uwaterloo.ca)
+- Minghao (minghao.ning@uwaterloo.ca)
+- Prof. Hu (yue.hu@uwaterloo.ca)
 
-While in-lab, you are required to use the Desktop PCs and **NOT** your personal setup (VMWare, remote desktop, lent laptop). So, make sure that you have your modified files, either online or on a USB, with you to try it out in-lab. 
+**Emergency resources**
+- Amr Hamdi (amhamdi@uwaterloo.ca)
 
-## Part 1 - connecting to the robot (no marks)
-Open the [connectToUWtb4s.md](https://github.com/aalghooneh/MTE544_student/blob/main/connectToUWtb4s.md) markdown file in the main branch, and follow along. Read and follow each step carefully.
+**Environment for the final exam**
 
-## Part 2 - Robot teleop (no marks)
+For the final exam, no real robot is needed, everything will be conducted in simulation. Refer to `tbt3Simulation.md` in the `main` branch to see how to launch the Gazebo simulation. If you installed your environment using the script provided in `setup`, then it should work without any issues. Likely, you should have checked it's fully functional during the term for your labs.
 
-In this part, you will learn to play with the robot; you will get to undock it from the charger and then move it around by keyboard.  
-When you want to dock it again, It should be able to find it only when it is in less than ~0.5 meter around it. Note, that it doesn't
-necessarily goes to the dock that it was undocked from, it will just find the next available dock.
-
-The undock command goes through a [action server](https://docs.ros.org/en/humble/Tutorials/Intermediate/Writing-an-Action-Server-Client/Cpp.html).
+For the final exam, you will want to run Gazebo in an empty environment without any additional structure (no house, no walls, etc, unless you want to score the bonus).
 
 ```
-ros2 action send_goal /undock irobot_create_msgs/action/Undock {}
-```
-You robot should undock.
-If not, revisit *Part 1* - Connect to robot via VPN, and make sure the VPN terminal is still running and that you can still see the robot's topics. If you suspect the vpn isn't working, make sure you terminate it, and then run again.
-
-Next run the teleop command to be able to move the robot manually around.
-
-```
-ros2 run teleop_twist_keyboard teleop_twist_keyboard
+ros2 launch turtlebot3_gazebo empty_world.launch.py
 ```
 
-See the prompt for help on the keys. 
+**Grading**: refer to ```rubrics.md``` for detailed marking scheme.
 
-To dock the robot, use:
+## Part 1 - Explanation of the stack (20 marks)
+Throughout the labs 2 to 4, you've been working on the same stack that comprises control, state estimation, and path planning.
+In this first part, explain how the stack works with reference to the several classes involved:
+- ```decisions.py```
+- ```planner.py```
+- ```localization.py```
+- ```controller.py```
 
-```
-ros2 action send_goal /dock irobot_create_msgs/action/Dock {}
-```
+In the explanation:
+- Refer back to what you've done in the labs and how you progressed each lab towards the complete stack.
+- Draw a block diagram displaying how each part are connected to help your discussion. Specify which information/data and how they are exchanged between each block. The diagram can be hand-drawn, or computer drawn, but must be clearly readable.
+- Make connections to the theoretical content learned during the lectures as well.
+- Maximum 500 words.
 
-## NOTE: when you open a new terminal, you need to source again and set the domain ID, or you will not see the topics:
+## Part 2 - Implement the RRT* algorithm for path planning (25 marks + 5 bonus marks)
+In Lab4, you implemented and tested the A* algorithm. For the lab, we provided the almost-complete A* that was already integrated into the stack.
 
-- Source the .bashrc file: source ~/robohub/turtlebot4/configs/.bashrc
-- Declare ros2 domain: export ROS_DOMAIN_ID=X (X being the number of your robot)
+The ```TODO``` items will be mainly in the following files:
+- ```rrt_star.py```
+- ```planner.py```
 
-## Part 3 - Map aquisition (5 marks)
-Check the [List of groups](https://uofwaterloo-my.sharepoint.com/:x:/g/personal/y526hu_uwaterloo_ca/Ea4EkpcchnhMki8bDj3RWygBWgvsYDx4HV4QvirBCZQdzQ?e=vS0vna) Excel sheet to see which entrance of the maze you have been assigned to and the time slots reserved for your group. There is a robot at each entrance. Use the robot at the entrance assigned to your group.
+For the final exam, we provide you with a skeleton code for the RRT*. For a detailed explanation of this class, refer to the comments on top of the ```rrt_star.py``` file. This class is not integrated into the stack yet. You are requested to perform the following:
+- Complete the RRT* algorithm following the comments in the code provided ```rrt_star.py``` (look for the ```TODO``` items), the following functions need to be completed:
+  - ```planning```
+  - ```choose_parent```
+  - ```rewire```
+  - ```search_best_goal_node```
+- Instead of a map, you will be using virtual obstacles (see Part 3). This code uses some functionalities derived from ```rrt.py``` (see Appendix at the bottom of this page).
+- It is recommended that you test your RRT* stand-alone without integrating it into the stack yet to solve any possible bug in the planner.
+- Integrate the RRT* planner into the stack such that you can execute the resulting path on the robot in simulation. Please note that this is not map based as you will be using virtual obstacles instead of a map (see Part 3 below). You can also implement it so that a desired planner can be chosen between A* and RRT* (no penalty if this is not done and no bonus if it is).
+- Implement trajectory smoothing of your obtained path before execution on the robot (in ```planner.py```).
 
-**Please try to finish within your allocated time.**
+**Bonus**
 
-**NOTE: do not move the dock, do not change the positioning of the robots, this is important to be able to use your map later on.**
+Instead of using virtual obstacles, integrate your code so that a map is used. This map should be acquired from the simulation environment (see Part3).
 
-Undock the robot, put the robot in the entrance marked for you, and reset the odometry, and then acquire the map as you did in LAB-1 and save it as room for use in the planning.
+## Part 3 - Test the stack with RRT* in simulation (25 marks + 3 bonus marks)
+Test your RRT* with different parameters in simulation.
 
-```
-# terminal 1
-ros2 service call /reset_pose irobot_create_msgs/srv/ResetPose {}
-# terminal 2
-ros2 launch turtlebot4_navigation slam.launch.py
-# terminal 3
-ros2 run nav2_map_server map_saver_cli -f room
-``` 
-When the map is acquired, make sure you **don't pick up the robot** so you wouldn't alter the odometry. If by any change you did, put the robot back on the dock, then undock and reset the odometry. This is to avoid for you to map the enviornment again.
+To test your RRT*:
+- Create a virtual map with virtual obstacles (see the RRT* code ```main``` function). This means that these obstacles will not be visualized in Gazebo nor in RViz (you can do extra work to have them visualized in RViz but this is not necessary and there are no bonus points associated).
+- Use the Extended Kalman Filter as localizer, use your tuned covariances, or tune them in simulation, we will not deduct marks for poor localization performance. 
+- Choose a goal pose: you can use the same RViz interface as the one for Lab4 (see below) to choose a goal pose, or you can hard-code a goal pose.
+- Execute the path in Gazebo.
+- **Bonus**: Log the poses of the robot and covariances from the EKF for the plots.
 
-**Show the map to a TA to score the marks associated to this part.**
+**To choose a goal pose in RViz**
+(Remember to run the map publisher if you are using the map)
+- In a terminal run the rviz2 with the given configuration: ```rviz2 -d pathPlanner.rviz```
+- In another terminal run the decisions.py: ```python3 decisions.py```
+- On rvzi2 use the 2D goal pose on the toolbar on top to choose the goal pose
+- Watch the robot go to the specified point
 
-## Part 4 - Complete the A* algorithm (25 marks)
-A mostly-completed A* algorithm is provided in ```a_star.py```.
+Show your results with at least **two different sets of virtual obstacles**, and for each set, show at least **two different goal points**. To report your results:
+- Tune your RRT* parameters (e.g. circle radius ```connect_circle_dist``` to be considered, expansion distance ```expand_dist```), in the written report you will be asked to discuss this process.
+- Plot containing the virtual obstacles, the obtained path (optionally the entire RRT* tree), clearly marking the starting and goal positions. Overlay the generated path with the executed path. For **bonus**, plot the covariances as ellipses (see Appendix). 
 
-For this part:
-- Follow the comments to complete the code in ```a_star.py``` to plan the path using the A* algorithm. 
-- Implement two different heuristics: Manhattan distance and Euclidean distance. A policy for switching between these two heuristics is not implemented, you are free to implement this the way you prefer (hard coded or with switching parameter or any other way).
+To score fully the **bonus** with map: in addition to the above, show the planning using the house or the world of the TurtleBot3 (launch Gazebo with one of these environments and create the map to be used), and execute the motion in this environment.
 
-## Part 5 - Complete the code for testing the path (25 marks + 5 bonus marks)
-To utilize the planner, it is necessary to create a cost map and define a goal pose. Differently from previous planners you have used, in this case the searching algorithm will create a list of poses that the robot has to follow (a path). So some adaptations to the code are necessary.
+Record a video of at least one successful trial, the video should contain:
+- The choice of the goal point from RViz;
+- The path execution in Gazebo.
+The path shown in the video must be one of the four plots in the report. Clearly state in the report which one corresponds to the video.
 
-For this part:
-- Complete the code in ```planner.py``` to create the cost map using the ```mapManipulator``` from ```mapUtilities.py```;
-- Complete the code in ```planner.py``` to create a trajectory that is a list of goal poses returned by the searching algorithm which correspond to the path to follow;
-- Complete the code in ```decisions.py``` to adapt the code for the path planner.
-- **Bonus** - In ```decisions.py``` use the PID gains from your Lab2, if you could not finish Lab2 or could not obtain good values, ask a TA (no bonus). Complete the code in ```localization.py``` with the Q, R, and P matrices you obtained in Lab3. If you could not obtain good values or you could not obtain any values, you can use ```rawSensors``` instead of ```kalmanFilter``` for the localizer (no bonus if rawSensors is used).
+**Video recording guidelines**
 
-## Part 6 - Test your path planner (20 marks)
-To test the path planner:
-- Choose at least two different goal poses (can be consecutive goal points during the same execution) on your map that are significantly far from each other and perform path planning and navigation for each ot these two goals.
-- Perform the planning for each of these two goal poses with the two heuristics implemented in Part 4 (Manhattan and Euclidean).
+Do not use your phone or an external camera pointing at the computer screen for the video, use a screen capture/recorder (e.g. on Windows 11 you can use the snipping tool, in Ubuntu you can use screenshot tool).
 
-**For choosing a goal pose:**
-1. Open a terminal and run the mapPublisher.py: ```python3 mapPublisher.py```  
-2. In another terminal run the rviz2 with the given configuration: ```rviz2 -d pathPlanner.rviz```
-3. In another terminal run the decisions.py: ```python3 decisions.py```
-4. On rvzi2 use the 2D goal pose on the toolbar on top to choose the goal pose 
-5. Watch the robot go to the specified point 
-
-**Note, given that there is limited time and space in the lab, do the necessary for scoring the in-lab marks (see below), and the rest in simulation.**
-
-**In-lab marks**:
-**Check your allocated time slot for testing. Please try to finish within your allocated time.**
-
-- **Show the path execution with at least two goal poses and one heuristic to a TA to score 10 marks. Show the TA where are your goal poses within the map on RViz and what is the used heuristics.**
-
-
-## Conclusions - Written report (30 marks)
-You can do this part in the lab (time allowing) or at home. **Make sure you have the proper data saved**.
-
+## Conclusions - Written report and deliverables (30 marks)
 Please prepare a written report containing on the front page:
-- Names (Family Name, First Name) of all group members;
-- Student ID of all group members;
-- Station number and robot number.
+- Name (Family Name, First Name);
+- Student ID.
 
-In a maximum of 3 pages (excluding the front page), report the performance of the path planner. This report should contain the following:
+Page limits (excluding the front page and appendix):
+- 4 pages;
+- 5 pages if with bonus marks (map integration).
 
-* Describe how you implemented the path planning and navigation for the robot from the planner to the actual motions of the robot, including how the provided code works.
-* Figures illustrating the map, with the trajectories generated for the two goal points overlayed on the map. Make sure to clearly mark the starting and ending locations of the robot.
-* Compare the two different heuristics (Manhattan and Euclidean distances, they can be on the same plot, but use different colors). Discuss the results. Are they different, if yes, why, if not why. Which one is better, and why?
+Report the following sections in your report:
+
+* Section 1 - Stack: the description and discussion of the stack (see Part 1), max 500 words.
+* Section 2 - RRT* implementation: 
+  * Describe how th provided RRT* works and which modifications you implemented.
+  * Describe how you integrated the path planning and navigation for the robot from the planner to the actual motions of the robot (you do not need to describe the entire stack again as you should have done this in Part 1), including the implementation of path smoothing.
+* Section 3 - Testing: 
+  * Report figures as specified in Part 3.
+  * Discuss how you tuned your RRT* parameters to reach the final parameters you used for the plots.
+  * Discuss the performance of your RRT*.
+* Section 4 - Final discussions:
+  * Discuss the overall performance of your entire stack, i.e. including your PID controller, EKF, and RRT* planner.
+
 
 ## Submission
 
-Submit the report and the code on Dropbox (LEARN) in the corresponding folder. Only one submission per group is needed:
-- **Report**: one single pdf;
+Submit the report and the code on Dropbox (LEARN) in the corresponding folder.
+- **Report**: one single pdf that can be checked for Turnitin (text must be detectable as such, i.e. not printed pdfs);
 - **Code**: make sure to have commented your code! Submit one single zip file with everything (including the csv files obtained from the data log and the map files).
+- **Video**: video file or link to the video in the report.
 
 
 Good luck!
+
+## Appendix
+
+**Functions from rrt.py**
+
+The ```rrt_star.py``` file uses some functions from ```rrt.py```, mainly the following ones, you can find them with comments explaining the functions in ```rrt.py```. It is advised to get familiar with them before proceeding with the completion of the code:
+- ```steer```
+- ```check_collision```
+
+
+**(Bonus) Covariances as ellipses**
+
+In this case, we are interested in the covariance in the `x` and `y` directions. The axis of the ellipse are defined by the standard deviations $\sigma_x$ and $\sigma_y$ (note standard deviations and not variance), leading to the following equation of the ellipse:
+
+$$\begin{equation}(\frac{x}{\sigma_x})^2 + (\frac{y}{\sigma_y})^2 = d \end{equation}$$
+
+Note that ```d``` is the scale of the ellipse and can be any number, e.g. 1.
+Make sure also to orient the ellipse so that it is tangent to the path (oriented as the heading ```theta``` of the robot).
+
+
+
+
+

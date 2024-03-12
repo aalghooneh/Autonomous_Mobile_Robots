@@ -1,34 +1,35 @@
-## Part 1 and 2: No marks
-## Part 3: 5 marks
-**In-Lab**
-- ```5/5``` if proper and good quality map shown, ```3/5``` if not good quality, ```0/5``` if no map shown.
+## Part 1: 20 marks (from the written content on the report)
+- ```10``` if properly explained the stack and the relationship between all components;
+- ```5``` if added schematics/block diagram as requested;
+- ```5``` if properly connected with theoretical contents;
+- ```1``` point deduction for exceeding word limit.
 
-## Part 4: 25 marks
-**From Code Submission on LEARN:**
-- ```5/5``` if proper initialization of star and end nodes and g, h, f, ```3/5``` if initialized but partially wrong, ```0/5``` if incomplete/completely wrong;
-- ```3/3``` if correctly completed the movements, ```1.5/3``` if completed but partially wrong, ```0/3``` if incomplete/completely wrong.
-- ```2/2``` if correctly completed the size of the maze, ```1/2``` if completed but partially wrong, ```0/2``` if incomplete/completely wrong.
-- ```5/5``` if correctly completed the node position and checked that it is within boundaries ```2.5/5``` if completed but partially wrong, ```0/5``` if incomplete/completely wrong.
-- ```10/10``` if correctly implemented the two specified two heuristics and properly completed the computation of the costs```5/10``` if completed one or two but partially wrong, ```0/10``` if incomplete/completely wrong.
+## Part 2: 25 marks + 5 marks bonus (from code submission)
+- ```6``` if completed properly ```planning```;
+- ```3``` if completed properly ```choose_parent```;
+- ```4``` if completed properly ```rewire```;
+- ```3``` if completed properly ```search_best_goal_node```;
+- ```6``` if implemented properly integration into stack;
+- ```3``` if implemented properly path smoothing.
+- **Bonus** ```5``` if implemented integration with map (and delivered plot and video with the map).
 
-## Part 5: 25 marks
-**From Code Submission on LEARN**
-- ```10/10``` if correctly implemented and completed the code in ```planner.py``` for the cost map, ```5/10``` if completed but partially wrong, ```0/10``` if incomplete/completely wrong.
-- ```10/10``` if correctly implemented and completed the code in ```planner.py``` for the trajectory, ```5/10``` if completed but partially wrong, ```0/10``` if incomplete/completely wrong.
-- ```5/5``` if correctly implemented and completed the code in ```decisions.py``` to adapt the code for the path planner, ```2.5/5``` if completed but partially wrong, ```0/5``` if incomplete/completely wrong.
-- **Bonus** ```2.5``` marks for using PID gains from Lab2, ```2.5``` marks for using Q, R, P from Lab3 and EKF for the localizer.
+## Part 3: 25 marks + 3 marks bonus (from code submission, written report, and video)
+- ```8``` for using EKF and PID controllers properly;
+- ```12``` for two goal points shown in plots;
+- ```5``` for video(s) showing at least one successful run;
+- **Bonus** ```3``` for logging and plotting the covariance ellipses.
+- There is a deduction of ```1``` mark for each figure missing title, label, legend (when needed), and grid. There is a further deduction of ```1``` for each missing indication of start and goal poses, and ```1``` mark deduction for low-quality video (e.g. not recorded with a screen recorder).
 
-## Part 6: 20 marks
-**From Code and Report Submission on LEARN**
-- ```5/5``` if two heuristics tested successfully, ```2.5/5``` if only one heuristic, ```0/5``` if none.
 
-**In-Lab**
-- ```10/10``` if shown at least two successful planned trajectories to two desired goal poses, ```5/10``` if showed only one trajectory, ```0/10``` if not shown.
-
-## Conclusion - Report: 30 marks
+## Conclusions - Report: 30 marks
 **From Report on LEARN**
-- ```1``` mark for names (Family Name, First Name); student IDs of all group members; station number (if known); and robot number.
-- ```10/10``` for the proper and correct description of how the workflow of the code and the implementation, ```5/10``` if incomplete/insufficient explanation, ```0/10``` if missing/completely wrong.
-- ```10/10``` for providing all required maps and figures (two goal poses, two heuristics), ```5/10``` if only provided partial results, ```0/10``` if no results provided. There is a deduction of ```1``` mark for each figure missing title, label, legend (when needed), and grid. There is further deduction of ```1``` for each missing indication of start and goal poses.
-- ```9/9``` for discussion on the results obtained, ```5/9``` for incomplete/insufficient discussion, ```0/9``` for missing discussion.
-- Deduction of ```1``` mark for each page exceeding the limit. 
+- ```1``` mark for names (Family Name, First Name); student ID.
+- Section 2: 
+   - ```7``` for properly describing the RRT* code and the implementation;
+   - ```4``` for properly describing the integration into the stack, including path smoothing;
+- Section 3:
+   - ```6``` for proper discussion on the tuning process (e.g. report some of the values tried and why did you change them);
+   - ```4``` for meaningful discussion on the overall performance of the implemented RRT*;
+- Section 4:
+   - ```8``` for meaningful discussion on the overall stack, including all parts of the stack combined.
+- Deduction of ```1``` mark for each page exceeding the limit (appendix not included). 
