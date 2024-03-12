@@ -50,6 +50,8 @@ In this lab, you will get familiar with different estimation methods for localiz
 
 The first part would be the implementation of a Kalman Filter (KF). 
 You will experience how the motion model of the mobile robot can be used to both have better localization and also filter out the IMU acceleration noise. 
+The second part would be the implementation of the Particle Filter, which you will build a map using SLAM toolbox and then use LiDAR and encoders to localize the 
+robot.
 
 Moreover, you will also record a normal trajectory inside the maze and will be able to localize the robot using a particle filter.
 
