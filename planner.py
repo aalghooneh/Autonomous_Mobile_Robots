@@ -1,3 +1,4 @@
+
 from math import sin,cos, atan2,atan
 import math
 
@@ -6,23 +7,25 @@ POINT_PLANNER=0; TRAJECTORY_PLANNER=1; SPIRAL_4TUNE=2
 PARABOLA=0; SIGMOID=1
 
 class planner:
-    def __init__(self, type_):
+
+    def __init__(self, type_, mapName="room"):
 
         self.type=type_
+        self.mapName=mapName
 
     
-    def plan(self):
+    def plan(self, startPose, endPose):
         
         if self.type==POINT_PLANNER:
-            return self.point_planner()
+            return self.point_planner(endPose)
+        
         
         elif self.type==TRAJECTORY_PLANNER:
             return self.trajectory_planner()
+        
 
-
-    def point_planner(self):
-        x=-1.0; y=-1.0; theta=0.0
-        return x, y, theta
+    def point_planner(self, endPose):
+        return endPose
 
 
     def trajectory_planner(self):

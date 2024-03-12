@@ -17,17 +17,17 @@ def plot_errors(filename):
 
     
     
-    fig, axes = plt.subplots(2,1, figsize=(14,6))
+    fig, axes = plt.subplots(1,2, figsize=(14,6))
 
 
-    axes[0].plot([lin[len(headers) - 3] for lin in values], [lin[len(headers) - 2] for lin in values])
+    axes[0].plot([lin[0] for lin in values], [lin[1] for lin in values])
     axes[0].set_title("state space")
     axes[0].grid()
 
     
     axes[1].set_title("each individual state")
     for i in range(0, len(headers) - 1):
-        axes[1].plot(time_list, [lin[i] for lin in values], label= headers[i])
+        axes[1].plot(time_list, [lin[i] for lin in values], label= headers[i]+ " linear")
 
     axes[1].legend()
     axes[1].grid()
@@ -54,5 +54,6 @@ if __name__=="__main__":
     filenames=args.files
     for filename in filenames:
         plot_errors(filename)
+
 
 
