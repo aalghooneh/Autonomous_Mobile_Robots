@@ -1,29 +1,14 @@
-# mobileRoboticsCourse
+## Tutorials
+
+This part covers all the tutorials necessary for this course.
+
+The first one, is the linux tutorial, you can see through the PDF.
 
 
-# install pre-requisites of the course
-in case you have the ubuntu 22.04 installed,
+The second one, is the python tutorial, link to the python tutorial is,
 ```
-sh setup_mte544.sh
-```
-that will take care of installing everything.
-
-# installing docker
-to use our docker image in the robohub turtlebot4.git repo, go ahead with installing 
-docker on your machine,
-```
-sh setup_docker.sh
+# link to the python tutorial
+https://colab.research.google.com/drive/1XZ1TMxQby7nXYCVv3mvBKN015xg7luE6?usp=sharing
 ```
 
-# To check the latency of the topics in turtlebot4s
-go ahead with the Latency check script like this,
-
-
-
-```
-./latency_check.py topic msgType
-# for example for scan topic
-./latency_check.py /scan LaserScan 
-```
-
-
+The third one, is the tutorial for the ros2, the middleware you use for the robots. 
